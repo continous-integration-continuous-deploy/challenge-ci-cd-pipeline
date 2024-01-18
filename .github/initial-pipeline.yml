@@ -6,20 +6,22 @@ on:
   pull_request:
     branches: [ "main" ]
 
-jobs:
+ jobs:
   integration:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - run: echo "- Lint the code and run unit tests"
-        
-  build:
+
+
+ build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: echo "- Build the artifact"
+      - run: echo "- Build the artifact" 
+        
 
-  test-artifact:
+test-artifact:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -27,11 +29,15 @@ jobs:
       - run: echo "- Simulate and test the artifact"
 
   development:
-    runs-on: ubuntu-latest
-    steps:
+  environment: Development
+  needs:[build]
+  runs-on: ubuntu-latest
+  steps:
       - run: echo "- Auto-deploy the artifact to the development environment"
         
   staging:
+  environment: staging
+  needs: [development,test-artifact]
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -46,7 +52,8 @@ jobs:
       - run: echo "- Test the staging environment"
         
   production:
-    needs: staging
+  environment: production
+  needs: [test-staging]
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -56,7 +63,8 @@ jobs:
           echo "- Deploy the artifact to the production environment"
 
   test-production:
+    needs: [production] 
     runs-on: ubuntu-latest
     steps:
       - run: echo "- Test the artifact in the production environment"
-      - run: echo "# All tests and deployments have completed successfully!"
+      - run: echo "# Everything completed successfully!" >> $GITHUB_STEP_SUMMARY
